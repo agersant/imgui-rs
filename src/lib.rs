@@ -1650,9 +1650,14 @@ impl<'ui> Ui<'ui> {
         unsafe { sys::igIsWindowFocused(ImGuiFocusedFlags::ChildWindows) }
     }
 
-    /// Returns `true` if the last item is being active.
+    /// Returns `true` if the last item is currently active.
     pub fn is_item_active(&self) -> bool {
         unsafe { sys::igIsItemActive() }
+    }
+
+    /// Returns `true` if the last item was just made inactive.
+    pub fn is_item_deactivated(&self) -> bool {
+        unsafe { sys::igIsItemDeactivated() }
     }
 
     /// Group items together as a single item.
