@@ -6,6 +6,7 @@ use std::os::raw::{c_char, c_float, c_int, c_uchar, c_void};
 use std::ptr;
 use std::slice;
 use std::str;
+use std::thread;
 use sys::ImGuiStyleVar;
 
 pub use self::child_frame::ChildFrame;
@@ -270,6 +271,12 @@ impl ImGui {
         let io = self.io();
         io.mouse_wheel
     }
+    pub fn mouse_drag_delta(&self, button: ImMouseButton) -> (f32, f32) {
+        let delta = unsafe {
+            sys::igGetMouseDragDelta_nonUDT2(button as c_int, -1.0)
+        };
+        delta.into()
+    }
     /// Set to `true` to have ImGui draw the cursor in software.
     /// If `false`, the OS cursor is used (default to `false`).
     pub fn set_mouse_draw_cursor(&mut self, value: bool) {
@@ -390,7 +397,7 @@ impl ImGui {
             sys::ImGuiIO_AddInputCharactersUTF8(self.io_mut(), buf.as_ptr() as *const _);
         }
     }
-    pub fn get_time(&self) -> f32 {
+    pub fn get_time(&self) -> f64 {
         unsafe { sys::igGetTime() }
     }
     pub fn get_frame_count(&self) -> i32 {
@@ -588,7 +595,7 @@ impl<'ui> Ui<'ui> {
 
 impl<'a> Drop for Ui<'a> {
     fn drop(&mut self) {
-        if self.needs_cleanup {
+        if self.needs_cleanup && !thread::panicking() {
             unsafe {
                 sys::igEndFrame();
                 CURRENT_UI = None;
